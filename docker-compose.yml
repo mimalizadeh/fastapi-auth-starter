@@ -1,0 +1,53 @@
+services:
+  web:
+    build: 
+      context: .
+      dockerfile: dev.Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    networks:
+      - fasnet
+
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  database:
+    image: postgres:16
+    ports:
+      - "6543:5432"
+    env_file:
+      - .env
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - fasnet
+
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - "8888:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@mail.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+
+    networks:
+      - fasnet
+
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "5897:6379"
+    env_file:
+      - .env
+
+networks:
+  fasnet:
+
+volumes:
+  db-data:
+  pgadmin-data:

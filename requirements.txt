@@ -1,0 +1,14 @@
+fastapi~=0.119.0
+alembic~=1.17.0
+sqlalchemy[asyncio]~=2.0.44
+asyncpg
+uvicorn
+pydantic~=2.12.3
+python-dotenv
+pytest
+pydantic-settings~=2.11.0
+python-jose~=3.5.0
+passlib~=1.7.4
+python-multipart
+coloredlogs
+httpx
