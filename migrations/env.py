@@ -8,10 +8,24 @@ from alembic import context
 from app.db.setup import Base
 from app.db import models
 from app.core.config import Settings
-
+import os
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
+
+# create versions directory for migrations files
+directory_name = "./migrations/versions"
+try:
+    os.mkdir(directory_name)
+    print(f"Directory '{directory_name}' created successfully.")
+except FileExistsError:
+    print(f"Directory '{directory_name}' already exists.")
+except PermissionError:
+    print(f"Permission denied: Unable to create '{directory_name}'.")
+except Exception as e:
+    print(f"An error occurred: {e}")
+
+
 settings = Settings()
 config = context.config
 
