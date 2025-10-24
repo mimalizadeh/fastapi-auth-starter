@@ -7,7 +7,7 @@ ____
 
 1. #### Clone project
 2. #### Create `.env` file from `.env.example` :
-       $ cp .env .env.example
+       $ cp .env.example .env
 3. #### Create virtualenv
        $ virtualenv -p python3 fas-venv
 4. #### Install requirements
