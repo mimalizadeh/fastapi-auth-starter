@@ -1,19 +1,40 @@
+from secrets import token_hex
+
 from fastapi import HTTPException, status, Response, Request
 from app.db.models.user import User
 from app.core.security import verify_password, create_refresh_token, create_access_token
 from jose import jwt, JWTError, ExpiredSignatureError
-
 from app.core.config import get_settings
 from app.db.repo.request import RequestRepo
 from app.core.config import logger
 from app.schemas.auth import LoginSchema, TokenSchema
-
+from fastapi.security import OAuth2PasswordBearer
+from typing import Optional
 settings = get_settings()
+
+from typing import Optional
+from fastapi import Request
+from fastapi.security import OAuth2PasswordBearer
+
+class CookieOAuth2(OAuth2PasswordBearer):
+    async def __call__(self, request: Request) -> Optional[str]:
+        try:
+            token = await super().__call__(request)
+            return token
+        except HTTPException:
+            access_token = request.cookies.get("access_token")
+            if access_token:
+                return access_token
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Not authenticated",
+            )
+
+oauth2_scheme = CookieOAuth2(tokenUrl="/api/v1/auth/signin")
 
 class AuthService:
     """
     This service is responsible for handling authentication.
-
     """
     async def authenticate_user(self, repo: RequestRepo, email, password):
         user = await repo.user.get_by_email(email=email)
@@ -57,7 +78,7 @@ class AuthService:
         # Generate new tokens
         token_schema = await self.create_token(user=user)
 
-        await repo.token.update_refresh_token_by_id(int(stored_refresh_token.id),
+        await repo.token.update_refresh_token_by_id(token_id=int(stored_refresh_token.id),
                                                     refresh_token=token_schema.refresh_token)
 
         # Set cookies (HTTPS-aware)
