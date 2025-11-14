@@ -11,11 +11,10 @@ router = APIRouter(
 
 
 @router.get("/me",response_model= UserSchema)
-async def user_details( user: CurrentUserDep):
+async def user_details(user: CurrentUserDep):
     """
     Check if user is authenticated return user data
     :param user: Current user
     :return: user data
     """
-
     return user

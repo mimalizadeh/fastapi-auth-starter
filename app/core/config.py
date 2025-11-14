@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     ENV:str="production"
 
     class Config:
-        env_file = ".env"
+        env_file = r"D:\\fastapi-auth-starter\.env"
         extra = 'ignore'
         case_sensitive = False
 

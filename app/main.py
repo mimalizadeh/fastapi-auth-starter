@@ -11,7 +11,6 @@ settings = get_settings()
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG if settings.log_level == "DEBUG" else logging.INFO)
 
-
 app = FastAPI(title=settings.project_name, docs_url="/api/docs")
 
 

@@ -1,18 +1,19 @@
 from typing import Annotated
 from fastapi import HTTPException, Cookie
-from fastapi import APIRouter, Response, Depends, status
-
+from fastapi import APIRouter, Response, Depends, status , Request
+from fastapi.security import OAuth2PasswordRequestForm
 from app.core.config import logger
 from app.dependencies.repo import RepoRequestDep
 from app.schemas.auth import TokenSchema, LoginSchema
 from app.schemas.user import UserSchema, UserSchemaIn
 from app.services.auth_service import auth_service
-
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/signin", response_model=TokenSchema)
-async def signin(form_data: LoginSchema, response: Response, repo: RepoRequestDep):
+async def signin(response: Response,
+                 repo: RepoRequestDep,
+                 form_data: OAuth2PasswordRequestForm = Depends()):
     """
     Sign in with an existing user
     """
@@ -56,23 +57,29 @@ async def signup(user: UserSchemaIn, repo: RepoRequestDep):
 
 
 @router.post("/refresh")
-async def refresh_token(response: Response, repo: RepoRequestDep,
-                        refresh_token: Annotated[str | None, Cookie()] = None):
+async def refresh_token(response: Response,
+                        request: Request,
+                        repo: RepoRequestDep):
     """
     Refresh the access token
     """
+    refresh_token = request.cookies.get("refresh_token")
     new_tokens = await auth_service.refresh_token_update(repo=repo, refresh_token=refresh_token, response=response)
     return new_tokens
 
 
 @router.post("/logout")
-async def logout(response: Response, repo: RepoRequestDep, refresh_token: Annotated[str | None, Cookie()] = None):
+async def logout(response: Response,
+                 repo: RepoRequestDep,
+                 request: Request
+                 ):
     """
     Logout the user
     """
-    if refresh_token:
-        await repo.token.revoked_by_token(refresh_token)
-
+    refresh_token = request.cookies.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing refresh token")
+    await repo.token.revoked_by_token(refresh_token)
     response.delete_cookie("access_token")
     response.delete_cookie("refresh_token")
     return {"message": "Logged out successfully"}
