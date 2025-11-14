@@ -1,7 +1,6 @@
-
 services:
   web:
-    build: 
+    build:
       context: .
       dockerfile: dev.Dockerfile
     ports:
@@ -12,17 +11,19 @@ services:
       - .env
     networks:
       - fasnet
-
-    depends_on: 
+    depends_on:
       - database
       - redis
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
   database:
     image: postgres:16
-
-    env_file:
-      - .env
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Aa123456
+      POSTGRES_DB: auth
+    ports:
+      - "5432:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
     networks:
@@ -45,8 +46,6 @@ services:
 
   redis:
     image: "redis:alpine"
-    env_file:
-      - .env
     networks:
       - fasnet
     restart: always
